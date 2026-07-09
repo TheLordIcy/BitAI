@@ -3,7 +3,13 @@ from textual.containers import VerticalScroll
 from textual.widgets import Input, Static
 from rich.panel import Panel
 from rich.text import Text
+
 from bit_ai import chat
+from chat_storage import (
+    create_chat_file,
+    save_messages
+)
+
 import asyncio
 
 
@@ -78,11 +84,14 @@ class BIT(App):
 
     .thinking {
         color: #66ccff;
+        margin: 1 0;
     }
     """
 
     def __init__(self):
         super().__init__()
+
+        self.chat_file = create_chat_file()
 
         self.messages = [
             {
@@ -110,6 +119,11 @@ Be concise, helpful and technically accurate.
             }
         ]
 
+        save_messages(
+            self.chat_file,
+            self.messages
+        )
+
     def compose(self) -> ComposeResult:
         yield IcyHeader()
 
@@ -130,6 +144,13 @@ Be concise, helpful and technically accurate.
         await chat_container.mount(
             Message(
                 "❄ Welcome to BIT\n\n🚀 Binary Intelligence Tool Online",
+                classes="assistant"
+            )
+        )
+
+        await chat_container.mount(
+            Message(
+                f"📁 Session Log\n\n{self.chat_file.name}",
                 classes="assistant"
             )
         )
@@ -165,6 +186,11 @@ Be concise, helpful and technically accurate.
             }
         )
 
+        save_messages(
+            self.chat_file,
+            self.messages
+        )
+
         try:
             reply = await asyncio.to_thread(
                 chat,
@@ -176,6 +202,11 @@ Be concise, helpful and technically accurate.
                     "role": "assistant",
                     "content": reply
                 }
+            )
+
+            save_messages(
+                self.chat_file,
+                self.messages
             )
 
         except Exception as e:
