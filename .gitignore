@@ -1,0 +1,63 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environments
+
+.venv/
+venv/
+env/
+
+# IDEs
+
+.vscode/
+.idea/
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+# Python Build Files
+
+build/
+dist/
+*.egg-info/
+
+# Logs
+
+*.log
+
+# Environment Variables
+
+.env
+
+# BIT Chat History
+
+.bit/
+
+# Testing
+
+.pytest_cache/
+.coverage
+
+# Ruff / Linting
+
+.ruff_cache/
+
+# Mypy
+
+.mypy_cache/
+
+# Temporary Files
+
+*.tmp
+*.bak
+*~
+
+# Textual
+
+.textual/
