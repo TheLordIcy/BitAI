@@ -86,7 +86,7 @@ ollama pull qwen2.5-coder:7b
 ### 3. Clone the project
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/TheLordIcy/BitAI.git
 cd bit
 ```
 
