@@ -11,16 +11,22 @@ CHAT_DIR = BIT_DIR / "chats"
 CHAT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# Create a new chat file for a session
+# Create a new chat file
 def create_chat_file():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
     chat_file = CHAT_DIR / f"{timestamp}.json"
 
+    data = {
+        "title": "Untitled Chat",
+        "created_at": timestamp,
+        "messages": []
+    }
+
     with open(chat_file, "w") as f:
-        json.dump([], f)
+        json.dump(data, f, indent=4)
 
     return chat_file
-
 
 # Save messages to disk
 def save_messages(chat_file, messages):
