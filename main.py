@@ -10,7 +10,8 @@ from chat_storage import (
     save_messages,
     load_chat,
     load_messages,
-    get_recent_chats
+    get_recent_chats,
+    get_chat_title
 )
 
 import asyncio
@@ -145,7 +146,10 @@ class BIT(App):
 
         if self.recent_chats:
             for i, chat_file in enumerate(self.recent_chats, start=1):
-                menu += f"{i}. {chat_file.stem}\n"
+
+                title = get_chat_title(chat_file)
+
+                menu += f"{i}. {title}\n"
         else:
             menu += "No chats found.\n"
 
