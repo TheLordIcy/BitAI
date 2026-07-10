@@ -172,9 +172,92 @@ class BIT(App):
         if not user_text:
             return
 
-        event.input.value = ""
+        chat_container = self.query_one(
+            "#chat",
+            VerticalScroll
+        )
 
-        chat_container = self.query_one("#chat", VerticalScroll)
+        # Rename chat
+        if user_text.startswith("/rename "):
+
+            parts = user_text.split(maxsplit=2)
+
+            # Startup menu rename:
+            # /rename 2 New Title
+            if self.startup_mode:
+
+                if len(parts) < 3:
+                    await chat_container.mount(
+                        Message(
+                            "❌ Usage: /rename <chat_number> <new_title>",
+                            classes="assistant"
+                        )
+                    )
+                    return
+
+                try:
+                    index = int(parts[1]) - 1
+
+                    if not (0 <= index < len(self.recent_chats)):
+                        raise ValueError
+
+                    new_title = parts[2]
+
+                    chat_file = self.recent_chats[index]
+
+                    update_chat_title(
+                        chat_file,
+                        new_title
+                    )
+
+                    await self.refresh_startup_menu()
+
+                except ValueError:
+                    await chat_container.mount(
+                        Message(
+                            "❌ Invalid chat number",
+                            classes="assistant"
+                        )
+                    )
+
+                event.input.value = ""
+                return
+
+            # Loaded chat rename:
+            # /rename My New Title
+            else:
+
+                new_title = user_text.replace(
+                    "/rename ",
+                    "",
+                    1
+                ).strip()
+
+                if not new_title:
+                    await chat_container.mount(
+                        Message(
+                            "❌ Title cannot be empty",
+                            classes="assistant"
+                        )
+                    )
+
+                    event.input.value = ""
+                    return  
+
+                update_chat_title(
+                    self.chat_file,
+                    new_title
+                )
+
+                await chat_container.mount(
+                    Message(
+                        f"✏️ Chat renamed to:\n\n{new_title}",
+                        classes="assistant"
+                    )
+                )
+
+                event.input.value = ""
+                return
 
         # Startup menu handling
         if self.startup_mode:
@@ -344,6 +427,40 @@ class BIT(App):
         )
 
         chat_container.scroll_end()
+
+    # Rebuild startup menu
+    async def refresh_startup_menu(self):
+        chat_container = self.query_one(
+            "#chat",
+            VerticalScroll
+        )
+
+        # Clear existing widgets
+        await chat_container.remove_children()
+
+        self.recent_chats = get_recent_chats()
+
+        menu = "❄ BIT\n\nRecent Chats\n\n"
+
+        if self.recent_chats:
+            for i, chat_file in enumerate(
+                self.recent_chats,
+                start=1
+            ):
+                title = get_chat_title(chat_file)
+
+                menu += f"{i}. {title}\n"
+        else:
+            menu += "No chats found.\n"
+
+        menu += "\nN. New Chat"
+
+        await chat_container.mount(
+            Message(
+                menu,
+                classes="assistant"
+            )
+        )
 
     BINDINGS = [
         ("ctrl+c", "quit", "Quit"),
