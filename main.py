@@ -4,7 +4,11 @@ from textual.widgets import Input, Static
 from rich.panel import Panel
 from rich.text import Text
 
-from bit_ai import chat
+from bit_ai import (
+    chat,
+    generate_chat_title
+)
+
 from chat_storage import (
     create_chat_file,
     save_messages,
@@ -16,13 +20,6 @@ from chat_storage import (
 )
 
 import asyncio
-
-def generate_title(text):
-    words = text.split()
-
-    title = " ".join(words[:4])
-
-    return title.title()
 
 SYSTEM_PROMPT = """
 You are BIT.
@@ -290,12 +287,19 @@ class BIT(App):
         # First user message Becomes chat title
         if len(self.messages) == 1:
 
-            title = generate_title(user_text)
+            try:
+                title = await asyncio.to_thread(
+                    generate_chat_title,
+                    user_text
+                )
 
-            update_chat_title(
-                self.chat_file,
-                title
-            )
+                update_chat_title(
+                    self.chat_file,
+                    title
+                )
+
+            except Exception:
+                pass
 
         self.messages.append(
             {
