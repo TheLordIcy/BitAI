@@ -9,6 +9,7 @@ from chat_storage import (
     create_chat_file,
     save_messages,
     load_chat,
+    load_messages,
     get_recent_chats
 )
 
@@ -211,7 +212,7 @@ class BIT(App):
 
                     self.chat_file = self.recent_chats[index]
 
-                    self.messages = load_chat(
+                    self.messages = load_messages(
                         self.chat_file
                     )
 
@@ -223,11 +224,11 @@ class BIT(App):
                             classes="assistant"
                         )
                     )
-                    
+
                     # Render previous chats
                     for message in self.messages:
 
-                        # Nvere Show the systen pormpt
+                        # Never show the system prompt
                         if message["role"] == "system":
                             continue
 

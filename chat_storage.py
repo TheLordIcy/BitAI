@@ -30,8 +30,12 @@ def create_chat_file():
 
 # Save messages to disk
 def save_messages(chat_file, messages):
+    data = load_chat(chat_file)
+
+    data["messages"] = messages
+
     with open(chat_file, "w") as f:
-        json.dump(messages, f, indent=4)
+        json.dump(data, f, indent=4)
 
 
 # Load a chat from disk
@@ -39,6 +43,20 @@ def load_chat(chat_file):
     with open(chat_file, "r") as f:
         return json.load(f)
 
+
+# Get only the messages from a chat
+def load_messages(chat_file):
+    data = load_chat(chat_file)
+
+    if isinstance(data, list):
+        return data
+
+    return data["messages"]
+
+# Get chat title
+def get_chat_title(chat_file):
+    data = load_chat(chat_file)
+    return data["title"]
 
 # Get newest chat files first
 def get_recent_chats(limit=10):
