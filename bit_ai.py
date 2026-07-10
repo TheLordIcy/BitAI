@@ -1,7 +1,11 @@
 import requests
 
+
+# Current Ollama model
 MODEL = "qwen2.5-coder:7b"
 
+
+# Send conversation to Ollama
 def chat(messages):
     response = requests.post(
         "http://localhost:11434/api/chat",

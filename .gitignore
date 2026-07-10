@@ -43,6 +43,7 @@ dist/
 
 .pytest_cache/
 .coverage
+test.py
 
 # Ruff / Linting
 

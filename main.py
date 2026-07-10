@@ -7,10 +7,34 @@ from rich.text import Text
 from bit_ai import chat
 from chat_storage import (
     create_chat_file,
-    save_messages
+    save_messages,
+    load_chat,
+    get_recent_chats
 )
 
 import asyncio
+
+
+SYSTEM_PROMPT = """
+You are BIT.
+
+BIT stands for Binary Intelligence Tool.
+
+You are a futuristic AI assistant inspired by:
+- Linux
+- Open Source Software
+- Y2K Technology
+- Software Engineering
+
+You help with:
+- Programming
+- Linux
+- Web Development
+- Design
+- AI
+
+Be concise, helpful and technically accurate.
+"""
 
 
 class IcyHeader(Static):
@@ -88,41 +112,15 @@ class BIT(App):
     }
     """
 
+    # Initialize application state
     def __init__(self):
         super().__init__()
 
-        self.chat_file = create_chat_file()
+        self.startup_mode = True
+        self.recent_chats = get_recent_chats()
 
-        self.messages = [
-            {
-                "role": "system",
-                "content": """
-You are BIT.
-
-BIT stands for Binary Intelligence Tool.
-
-You are a futuristic AI assistant inspired by:
-- Linux
-- Open Source Software
-- Y2K Technology
-- Software Engineering
-
-You help with:
-- Programming
-- Linux
-- Web Development
-- Design
-- AI
-
-Be concise, helpful and technically accurate.
-"""
-            }
-        ]
-
-        save_messages(
-            self.chat_file,
-            self.messages
-        )
+        self.chat_file = None
+        self.messages = []
 
     def compose(self) -> ComposeResult:
         yield IcyHeader()
@@ -138,19 +136,23 @@ Be concise, helpful and technically accurate.
             placeholder="Ask BIT something..."
         )
 
+    # Show startup menu
     async def on_mount(self):
         chat_container = self.query_one("#chat", VerticalScroll)
 
-        await chat_container.mount(
-            Message(
-                "❄ Welcome to BIT\n\n🚀 Binary Intelligence Tool Online",
-                classes="assistant"
-            )
-        )
+        menu = "❄ BIT\n\nRecent Chats\n\n"
+
+        if self.recent_chats:
+            for i, chat_file in enumerate(self.recent_chats, start=1):
+                menu += f"{i}. {chat_file.stem}\n"
+        else:
+            menu += "No chats found.\n"
+
+        menu += "\nN. New Chat"
 
         await chat_container.mount(
             Message(
-                f"📁 Session Log\n\n{self.chat_file.name}",
+                menu,
                 classes="assistant"
             )
         )
@@ -165,6 +167,100 @@ Be concise, helpful and technically accurate.
 
         chat_container = self.query_one("#chat", VerticalScroll)
 
+        # Startup menu handling
+        if self.startup_mode:
+
+            selection = user_text.lower()
+
+            # Create new chat
+            if selection == "n":
+
+                self.chat_file = create_chat_file()
+
+                self.messages = [
+                    {
+                        "role": "system",
+                        "content": SYSTEM_PROMPT
+                    }
+                ]
+
+                save_messages(
+                    self.chat_file,
+                    self.messages
+                )
+
+                self.startup_mode = False
+
+                await chat_container.mount(
+                    Message(
+                        f"🚀 New Chat\n\n{self.chat_file.name}",
+                        classes="assistant"
+                    )
+                )
+
+                chat_container.scroll_end()
+
+                return
+
+            # Load old chat
+            if selection.isdigit():
+
+                index = int(selection) - 1
+
+                if 0 <= index < len(self.recent_chats):
+
+                    self.chat_file = self.recent_chats[index]
+
+                    self.messages = load_chat(
+                        self.chat_file
+                    )
+
+                    self.startup_mode = False
+
+                    await chat_container.mount(
+                        Message(
+                            f"📂 Loaded Chat\n\n{self.chat_file.name}",
+                            classes="assistant"
+                        )
+                    )
+                    
+                    # Render previous chats
+                    for message in self.messages:
+
+                        # Nvere Show the systen pormpt
+                        if message["role"] == "system":
+                            continue
+
+                        if message["role"] == "user":
+                            await chat_container.mount(
+                                Message(
+                                    f"👤 {message['content']}",
+                                    classes="user"
+                                )
+                            )
+
+                        elif message["role"] == "assistant":
+                            await chat_container.mount(
+                                Message(
+                                    f"🤖 BIT\n\n{message['content']}",
+                                    classes="assistant"
+                                )
+                            )
+
+                    chat_container.scroll_end()
+
+                    return
+ 
+            await chat_container.mount(
+                Message(
+                    "❌ Invalid selection",
+                    classes="assistant"
+                )
+            )
+
+            return
+
+        # Normal chat mode
         await chat_container.mount(
             Message(
                 f"👤 {user_text}",

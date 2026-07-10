@@ -1,5 +1,14 @@
-from ollama import ask_ollama
+from chat_storage import get_recent_chats, load_chat
 
-reply = ask_ollama("Say hello in a futuristic way")
+chats = get_recent_chats()
 
-print(reply)
+for i, chat in enumerate(chats, start=1):
+    print(f"{i}. {chat.name}")
+
+if chats:
+    messages = load_chat(chats[0])
+
+    print("\nLoaded chat:\n")
+
+    for msg in messages:
+        print(msg["role"], ":", msg["content"][:50])
