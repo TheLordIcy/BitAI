@@ -11,11 +11,18 @@ from chat_storage import (
     load_chat,
     load_messages,
     get_recent_chats,
-    get_chat_title
+    get_chat_title,
+    update_chat_title
 )
 
 import asyncio
 
+def generate_title(text):
+    words = text.split()
+
+    title = " ".join(words[:4])
+
+    return title.title()
 
 SYSTEM_PROMPT = """
 You are BIT.
@@ -279,6 +286,16 @@ class BIT(App):
         )
 
         await chat_container.mount(thinking)
+
+        # First user message Becomes chat title
+        if len(self.messages) == 1:
+
+            title = generate_title(user_text)
+
+            update_chat_title(
+                self.chat_file,
+                title
+            )
 
         self.messages.append(
             {

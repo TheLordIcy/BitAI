@@ -48,14 +48,20 @@ def load_chat(chat_file):
 def load_messages(chat_file):
     data = load_chat(chat_file)
 
+    # Old format
     if isinstance(data, list):
         return data
 
     return data["messages"]
-
+    
 # Get chat title
 def get_chat_title(chat_file):
     data = load_chat(chat_file)
+
+    #Old chat format
+    if isinstance(data, list):
+        return chat_file.stem
+
     return data["title"]
 
 # Get newest chat files first
@@ -67,3 +73,16 @@ def get_recent_chats(limit=10):
     )
 
     return chats[:limit]
+
+# Update chat title
+def update_chat_title(chat_file, title):
+    data = load_chat(chat_file)
+
+    # Skip legacy chats
+    if isinstance(data, list):
+        return
+
+    data["title"] = title
+
+    with open(chat_file, "w") as f:
+        json.dump(data, f, indent=4)
