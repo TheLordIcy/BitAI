@@ -240,6 +240,57 @@ More commands coming soon...
 
             return
 
+        # /delete command
+        if command == "/delete":
+
+            if not self.startup_mode:
+                await chat_container.mount(
+                    Message(
+                        "❌ /delete can only be used from the startup menu",
+                        classes="assistant"
+                    )
+                )
+                return
+
+            if len(args) != 1:
+                await chat_container.mount(
+                    Message(
+                    "❌ Usage: /delete <chat_number>",
+                    classes="assistant"
+                    )
+                )
+                return
+
+            try:
+                index = int(args[0]) - 1
+
+                if not (0 <= index < len(self.recent_chats)):
+                    raise ValueError
+
+                chat_file = self.recent_chats[index]
+
+                title = get_chat_title(chat_file)
+
+                chat_file.unlink()
+
+                await chat_container.mount(
+                    Message(
+                        f"🗑 Deleted Chat\n\n{title}",
+                        classes="assistant"
+                    )
+                )
+
+                await self.refresh_startup_menu()
+
+            except ValueError:
+                await chat_container.mount(
+                    Message(
+                        "❌ Invalid chat number",
+                        classes="assistant"
+                    )
+                )
+
+            return  
 
         # /clear command
         if command == "/clear":
