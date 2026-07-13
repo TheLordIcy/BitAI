@@ -6,6 +6,7 @@ from rich.text import Text
 
 from bit_ai import (
     chat,
+    stream_chat,
     generate_chat_title
 )
 
@@ -40,20 +41,56 @@ You help with:
 - AI
 
 Be concise, helpful and technically accurate.
+Act Human This is your assistant mode
 """
+
+# code prompt
+CODE_PROMPT = """
+You are BIT Code.
+
+You are an expert software engineering assistant.
+
+Focus on:
+- Python
+- Linux
+- Git
+- Debugging
+- Architecture
+- Open Source
+
+Give concise and technical answers.
+
+When asked to code:
+- Prefer complete working examples
+- Explain only when necessary
+"""
+
 
 
 class IcyHeader(Static):
     def on_mount(self):
+
+        self.styles.text_align = "center"
+
         logo = Text(
             """
- ██╗ ██████╗██╗   ██╗
- ██║██╔════╝╚██╗ ██╔╝
- ██║██║      ╚████╔╝
- ██║██║       ╚██╔╝
- ██║╚██████╗   ██║
- ╚═╝ ╚═════╝   ╚═╝
-            """,
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⡇⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢌⠙⠢⣀⡇⠀⣀⠤⠊⢙⠄⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠉⠉⡀⠀⠑⠢⣀⠁⠀⢁⡠⠊⠁⠀⡌⢩⠀⠀⠀⠀⠀
+⢀⡞⠑⠢⢄⢰⠀⡇⠀⠀⠀⠈⡇⠀⠁⠀⠀⠀⠀⡇⢸⣀⠤⠊⠙⣄
+⠀⠉⠂⢄⡀⠉⠀⢇⡀⠀⠀⠀⡇⠀⠀⠀⠀⠀⣠⠇⠈⠁⡠⠔⠊⠀
+⠀⡠⠔⠂⢁⡠⠤⣀⠈⠒⢄⡀⡇⠀⠀⡀⠔⠊⢀⠠⠤⣈⠑⠂⠤⡀
+⠀⠱⠔⠊⠁⠀⠀⠀⠉⠢⢄⡈⠇⠀⠉⣀⠄⠊⠁⠀⠀⠀⠉⠒⠔⠁
+⠀⡠⠤⣀⠀⠀⠀⠀⢀⡠⠐⠉⡀⠀⡈⠑⠤⣀⠀⠀⠀⠀⢀⡠⢤⠀
+⠀⠓⠤⣀⠁⠂⠤⠂⠁⡠⠔⠉⡇⠀⠉⠒⠤⡀⠁⠢⠔⠊⢁⡠⠐⠃
+⠀⢀⡠⠔⠉⢀⠀⡖⠉⠀⠀⠀⡇⠀⠀⠀⠀⠈⠑⡄⢀⠈⠓⠤⡀⠀
+⠐⢇⢀⠤⠒⠹⠀⡇⠀⠀⠀⠀⡇⠀⡀⠀⠀⠀⠀⡇⢸⠑⠢⣀⢈⠇
+⠀⠈⠁⠀⠀⡄⢀⠇⠀⢀⠤⠊⡁⠀⠉⠢⢄⠀⠀⣇⢘⠀⠀⠀⠉⠀
+⠀⠀⠀⠀⠀⠉⠁⠀⢎⢁⠤⠊⡇⠀⠉⠢⢄⢱⠂⠀⠉⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⡇⠀⡀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+""",
             style="#66ccff",
         )
 
@@ -65,7 +102,6 @@ class IcyHeader(Static):
                 border_style="#00ccff",
             )
         )
-
 
 class Message(Static):
     pass
@@ -127,6 +163,9 @@ class BIT(App):
 
         self.chat_file = None
         self.messages = []
+
+        # Current assistant mode
+        self.mode = "assistant"
 
     def compose(self) -> ComposeResult:
         yield IcyHeader()
@@ -191,7 +230,20 @@ Startup Menu:
 /rename <chat_number> <title>
     Rename a saved chat
 
-More commands coming soon...
+/code
+    Enable coding mode after entering a chat
+
+/normal
+    Enable assistant mode
+
+/home
+    Return to startup menu
+
+/new
+    Create new chat
+
+/delete <chat_number>
+    Delete chat
 """ 
             await chat_container.mount(
                 Message(
@@ -209,6 +261,20 @@ More commands coming soon...
             await self.refresh_startup_menu()
 
             return
+
+        # /normal command
+        if command == "/normal":
+
+            self.mode = "assistant"
+
+            await chat_container.mount(
+                Message(
+                    "🤖 Assistant Mode Enabled",
+                    classes="assistant"
+                )
+            )
+
+            return True
 
         # /new command
         if command == "/new":
@@ -305,6 +371,20 @@ More commands coming soon...
             )
 
             return
+
+        # /code command
+        if command == "/code":
+            
+            self.mode = "code"
+
+            await chat_container.mount(
+                Message(
+                    "💻 Coding Mode Enabled",
+                    classes="assistant"
+                )
+            )
+
+            return True
 
         # /rename command
         if command == "/rename":
@@ -552,36 +632,64 @@ More commands coming soon...
         )
 
         try:
-            reply = await asyncio.to_thread(
-                chat,
-                self.messages
+            thinking.remove()
+            assistant_message = Message(
+                "🤖 BIT\n\n",
+                classes="assistant"
             )
+
+            await chat_container.mount(
+                assistant_message
+            )
+
+            full_reply = ""
+
+            active_messages = self.messages.copy()
+
+            if self.mode == "code":
+
+                active_messages.insert(
+                    0,
+                    {
+                        "role": "system",
+                        "content": CODE_PROMPT
+                    }
+                )
+
+            for chunk in stream_chat(active_messages):
+
+                full_reply += chunk
+
+                assistant_message.update(
+                    f"🤖 BIT\n\n{full_reply}"
+                )
+
+                chat_container.scroll_end()
+
+                await asyncio.sleep(0)
 
             self.messages.append(
                 {
                     "role": "assistant",
-                    "content": reply
+                    "content": full_reply
                 }
             )
-
+    
             save_messages(
                 self.chat_file,
                 self.messages
             )
 
         except Exception as e:
+
             reply = f"❌ Error:\n{e}"
 
-        thinking.remove()
-
-        await chat_container.mount(
-            Message(
-                f"🤖 BIT\n\n{reply}",
-                classes="assistant"
+            await chat_container.mount(
+                Message(
+                    reply,
+                    classes="assistant"
+                )
             )
-        )
-
-        chat_container.scroll_end()
 
     # Rebuild startup menu
     async def refresh_startup_menu(self):

@@ -1,3 +1,4 @@
+import json
 import requests
 
 
@@ -20,7 +21,6 @@ def chat(messages):
     response.raise_for_status()
 
     return response.json()["message"]["content"]
-
 
 def generate_chat_title(first_message):
     response = requests.post(
@@ -56,3 +56,29 @@ Title:
         .replace("'", "")
         
         )
+
+# Stream response from Ollama
+def stream_chat(messages):
+
+    response = requests.post(
+        "http://localhost:11434/api/chat",
+        json={
+            "model": MODEL,
+            "messages": messages,
+            "stream": True
+        },
+        stream=True,
+        timeout=300
+    )
+
+    response.raise_for_status()
+
+    for line in response.iter_lines():
+
+        if not line:
+            continue
+
+        data = json.loads(line)
+
+        if "message" in data:
+            yield data["message"]["content"]

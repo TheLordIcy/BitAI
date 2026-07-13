@@ -1,129 +1,74 @@
-# ❄ BIT — Binary Intelligence Tool
+# ❄ BIT
 
-> A local-first AI assistant built with Python, Textual, Ollama, and a touch of Y2K nostalgia.
+**Binary Intelligence Tool**
 
-BIT (Binary Intelligence Tool) is a terminal-based AI assistant designed for developers, Linux enthusiasts, and builders who want a fast, private, and customizable AI experience.
+A futuristic terminal-based AI assistant powered by **Ollama**, **Qwen 2.5 Coder**, and **Textual**.
 
-Powered entirely by local models through Ollama, BIT runs on your own machine with no subscriptions, no API costs, and no cloud dependency.
-
----
-
-## ✨ Features
-
-### Current Features
-
-* 🤖 Local AI using Ollama
-* 💬 Chat interface built with Textual
-* 🧠 Session memory
-* 💾 Automatic chat logging
-* 📜 Scrollable conversation history
-* 🎨 Y2K / GenXSoftClub-inspired interface
-* ⚡ Async responses (UI stays responsive)
-* 🔒 Fully local and private
-
-### Planned Features
-
-* 📂 Open previous conversations
-* 🔍 Search chat history
-* 🏷 AI-generated chat titles
-* 📁 Project awareness
-* 📝 File editing
-* 🌳 File explorer sidebar
-* 🔧 Git integration
-* 🤝 Aider integration
-* 🎵 Optional music mode
-* ✨ Advanced Y2K visual effects
+BIT is inspired by Linux, open-source software, Y2K technology, and software engineering workflows. It runs entirely on your machine and provides a clean terminal interface for chatting with local AI models.
 
 ---
 
-## 📸 Philosophy
+## Features
 
-BIT is inspired by:
-
-* Early 2000s internet culture
-* Y2K Blue aesthetics
-* GenXSoftClub design language
-* Linux and open-source software
-* Futuristic operating systems from the early web era
-
-The goal is not to recreate ChatGPT.
-
-The goal is to create a personal AI workstation that feels like a futuristic developer console from an alternate version of 2005.
+* 💬 Persistent chat history
+* 📂 Load previous conversations
+* 🏷️ AI-generated chat titles
+* ✏️ Rename chats
+* 🗑️ Delete chats
+* ⚡ Streaming responses
+* 💻 Coding Mode
+* 🤖 Assistant Mode
+* 🏠 Startup menu with recent chats
+* 🔒 Fully local using Ollama
+* 🎨 Y2K-inspired terminal UI
 
 ---
 
-## 🏗 Tech Stack
+## Tech Stack
 
 * Python
 * Textual
-* Rich
 * Ollama
 * Qwen 2.5 Coder
-* JSON-based chat storage
+* Rich
 
 ---
 
-## 🚀 Installation
+## Installation
 
-### 1. Install Ollama
-
-Follow the official installation instructions:
-
-https://ollama.com
-
----
-
-### 2. Pull a model
-
-Example:
+### Clone the repository
 
 ```bash
-ollama pull qwen2.5-coder:7b
-```
-
----
-
-### 3. Clone the project
-
-```bash
-git clone https://github.com/TheLordIcy/BitAI.git
+git clone https://github.com/YOUR_USERNAME/bit.git
 cd bit
 ```
 
----
-
-### 4. Create a virtual environment
+### Create a virtual environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-Fish shell:
-
-```fish
-source .venv/bin/activate.fish
-```
-
----
-
-### 5. Install dependencies
+### Install dependencies
 
 ```bash
-pip install textual rich requests
+pip install -r requirements.txt
 ```
 
----
+### Install Ollama
 
-### 6. Start Ollama
+Download Ollama:
+
+https://ollama.com
+
+Pull the default model:
 
 ```bash
-ollama serve
+ollama pull qwen2.5-coder:7b
 ```
 
----
-
-### 7. Launch BIT
+### Run BIT
 
 ```bash
 python main.py
@@ -131,66 +76,50 @@ python main.py
 
 ---
 
-## 📁 Project Structure
+## Commands
+
+| Command            | Description             |
+| ------------------ | ----------------------- |
+| `/help`            | Show available commands |
+| `/home`            | Return to startup menu  |
+| `/new`             | Create a new chat       |
+| `/rename <title>`  | Rename current chat     |
+| `/delete <number>` | Delete a chat           |
+| `/code`            | Enable coding mode      |
+| `/normal`          | Enable assistant mode   |
+
+---
+
+## Screenshots
+
+
+
+---
+
+## Project Structure
 
 ```text
 bit/
 ├── main.py
 ├── bit_ai.py
 ├── chat_storage.py
-├── README.md
+├── requirements.txt
 └── .bit/
     └── chats/
 ```
 
 ---
 
-## 🧠 Memory System
+## Roadmap
 
-BIT stores conversation history during runtime using Ollama's chat API.
+### v1.1
 
-Example:
-
-```text
-You: My favorite distro is EndeavourOS.
-
-You: What distro do I like?
-
-BIT: Your favorite distro is EndeavourOS.
-```
-
----
-
-## 💾 Chat Logs
-
-Every session automatically creates a chat log.
-
-Example:
-
-```text
-~/.bit/chats/
-
-2026-07-09_18-30-11.json
-2026-07-09_19-02-45.json
-2026-07-09_19-48-21.json
-```
-
-Logs are stored as JSON and can be loaded in future versions of BIT.
-
----
-
-## 🎯 Vision
-
-BIT is evolving toward a complete local AI development environment.
-
-Future versions aim to provide:
-
-* Persistent conversations
-* Project-aware coding assistance
-* Git integration
-* Local code generation
-* AI-powered workflows
-* A fully customizable cyber-terminal experience
+* Improved header/logo
+* Chat search
+* Export conversations
+* Better startup menu
+* Theme customization
+* Improved code rendering
 
 ---
 
@@ -200,4 +129,4 @@ MIT License
 
 ---
 
-Built by developers who think terminals should have personality.
+Built with ❄ by Icy.
