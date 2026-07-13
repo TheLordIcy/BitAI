@@ -166,27 +166,102 @@ class BIT(App):
             )
         )
 
-    async def on_input_submitted(self, event: Input.Submitted):
-        user_text = event.value.strip()
+    # Handle slash commands
+    async def handle_command(
+        self,
+        command,
+        args,
+        chat_container,
+        event
+    ):
 
-        if not user_text:
+        # /help command
+        if command == "/help":
+
+            help_text = """ 
+📖 BIT Commands
+
+/help
+    Show this menu
+
+/rename <title>
+    Rename current chat
+
+Startup Menu:
+/rename <chat_number> <title>
+    Rename a saved chat
+
+More commands coming soon...
+""" 
+            await chat_container.mount(
+                Message(
+                    help_text,
+                    classes="assistant"
+                )
+            )
+
             return
 
-        chat_container = self.query_one(
-            "#chat",
-            VerticalScroll
-        )
+        # /home command
+        if command == "/home" or command == "/menu":
+            self.startup_mode = True
 
-        # Rename chat
-        if user_text.startswith("/rename "):
+            await self.refresh_startup_menu()
 
-            parts = user_text.split(maxsplit=2)
+            return
 
-            # Startup menu rename:
-            # /rename 2 New Title
+        # /new command
+        if command == "/new":
+
+            self.chat_file = create_chat_file()
+
+            self.messages = [
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                }
+            ]
+
+            save_messages(
+                self.chat_file,
+                self.messages
+            )   
+
+            self.startup_mode = False
+
+            await chat_container.remove_children()
+
+            await chat_container.mount(
+                Message(
+                    f"🚀 New Chat\n\n{self.chat_file.name}",
+                    classes="assistant"
+                )
+            )
+
+            return
+
+
+        # /clear command
+        if command == "/clear":
+            
+            await chat_container.remove_children()
+
+            await chat_container.mount(
+                Message(
+                    "🧹 Chat Cleared",
+                    classes="assistant"
+                )
+            )
+
+            return
+
+        # /rename command
+        if command == "/rename":
+
+            # Startup menu rename
             if self.startup_mode:
 
-                if len(parts) < 3:
+                if len(args) < 2:
                     await chat_container.mount(
                         Message(
                             "❌ Usage: /rename <chat_number> <new_title>",
@@ -196,17 +271,15 @@ class BIT(App):
                     return
 
                 try:
-                    index = int(parts[1]) - 1
+                    index = int(args[0]) - 1
 
                     if not (0 <= index < len(self.recent_chats)):
                         raise ValueError
 
-                    new_title = parts[2]
-
-                    chat_file = self.recent_chats[index]
+                    new_title = " ".join(args[1:])
 
                     update_chat_title(
-                        chat_file,
+                        self.recent_chats[index],
                         new_title
                     )
 
@@ -220,29 +293,21 @@ class BIT(App):
                         )
                     )
 
-                event.input.value = ""
                 return
 
-            # Loaded chat rename:
-            # /rename My New Title
+            # Loaded chat rename
             else:
-
-                new_title = user_text.replace(
-                    "/rename ",
-                    "",
-                    1
-                ).strip()
-
-                if not new_title:
+                
+                if not args:
                     await chat_container.mount(
                         Message(
-                            "❌ Title cannot be empty",
+                            "❌ Usage: /rename <title>",
                             classes="assistant"
                         )
                     )
+                    return
 
-                    event.input.value = ""
-                    return  
+                new_title = " ".join(args)
 
                 update_chat_title(
                     self.chat_file,
@@ -256,8 +321,47 @@ class BIT(App):
                     )
                 )
 
-                event.input.value = ""
                 return
+
+        # Unknown command
+        await chat_container.mount(
+            Message(
+                f"❌ Unknown command: {command}",
+                classes="assistant"
+            )
+        )
+
+
+    async def on_input_submitted(self, event: Input.Submitted):
+        user_text = event.value.strip()
+
+        if not user_text:
+            return
+
+        chat_container = self.query_one(
+            "#chat",
+            VerticalScroll
+        )
+
+        # command routing
+        # Route slash commands
+        if user_text.startswith("/"):
+
+            parts = user_text.split()
+
+            command = parts[0].lower()
+
+            args = parts[1:]
+
+            await self.handle_command(
+                command,
+                args,
+                chat_container,
+                event
+            )
+
+            event.input.value = ""
+            return
 
         # Startup menu handling
         if self.startup_mode:
