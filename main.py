@@ -40,7 +40,7 @@ You help with:
 - Design
 - AI
 
-Be concise, helpful and technically accurate.
+Be helpful and technically accurate.
 Act Human This is your assistant mode
 """
 
